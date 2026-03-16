@@ -47,3 +47,19 @@ class SteamWebAPI(BaseExtractor):
         response = self.session.get(self.STORE_URL, params=params)
         data = response.json()
         return data[str(app_id)]['data'] if data.get(str(app_id), {}).get('success') else None
+    
+
+    class SteamSpyAPI(BaseExtractor):
+    BASE_URL = "https://steamspy.com/api.php"
+
+    @sleep_and_retry
+    @limits(calls=3, period=1) 
+    def get_app_details(self, app_id):
+        params = {'request': 'appdetails', 'appid': app_id}
+        try:
+            response = self.session.get(self.BASE_URL, params=params)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.warning(f"Failed to fetch SteamSpy details for {app_id}: {e}")
+            return None
