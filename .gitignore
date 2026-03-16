@@ -1,0 +1,24 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.pytest_cache/
+
+# Docker
+.dockerignore
+
+# Data and Database
+postgres_data/
+*.csv
+*.json
+!requirements.txt
+
+# OS
+.DS_Store
+Thumbs.db
