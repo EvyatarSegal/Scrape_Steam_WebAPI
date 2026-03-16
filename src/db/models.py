@@ -28,9 +28,6 @@ class RawGameData(Base):
     steamspy_data = Column(JSON, nullable=True)    # From steamspy.com
     fetched_at = Column(DateTime(timezone=True), server_default=func.now())
 
-
-from sqlalchemy import
-
 class GameAnalytics(Base):
     """
     Processed flat table for analysis.
@@ -43,7 +40,7 @@ class GameAnalytics(Base):
     genre_primary = Column(String)
     developer = Column(String)
     publisher = Column(String)
-    publisher_tier = Column(String) 
+    publisher_tier = Column(String) # AAA, AA, Indie
     
     price_initial = Column(Float)
     price_final = Column(Float)
@@ -55,21 +52,26 @@ class GameAnalytics(Base):
     
     positive_reviews = Column(Integer)
     negative_reviews = Column(Integer)
-    tags = Column(ARRAY(String)) 
+    tags = Column(ARRAY(String)) # Stored as array
     
     release_date = Column(DateTime)
-    ccu = Column(Integer) 
-    peak_ccu = Column(Integer) 
     
-    pc_req_min = Column(String) 
-    pc_req_rec = Column(String) 
+    # Concurrent Players
+    ccu = Column(Integer) # Current Concurrent Users
+    peak_ccu = Column(Integer) # Peak Concurrent Players (from SteamSpy 'userscore' or similar if avail, else placeholder)
+    
+    # Requirements
+    pc_req_min = Column(String) # Storage/RAM/GPU Min
+    pc_req_rec = Column(String) # Storage/RAM/GPU Rec
     required_age = Column(Integer)
     
+    # Features & Counts
     languages_count = Column(Integer)
     achievement_count = Column(Integer)
     dlc_count = Column(Integer)
     
+    # Booleans / Status
     is_early_access = Column(Boolean)
     is_free = Column(Boolean)
-    steam_deck = Column(Boolean) 
+    steam_deck = Column(Boolean) # Verified status
     controller_support = Column(Boolean)
