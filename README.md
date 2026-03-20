@@ -72,7 +72,7 @@ If you want to run specific tasks manually while the container is running, use t
 | :--- | :--- |
 | **Get Full App List (220k)** | `docker-compose exec etl python main.py --task reinit_apps` |
 | **Apply SQL Changes** | `docker-compose exec etl python main.py --task transform` |
-| **Normal App Refresh (160k)** | `docker-compose exec etl python main.py --task fetch_list` |
+| **Only Game App Refresh (160k)** | `docker-compose exec etl python main.py --task fetch_list` |
 | **Fetch 100 Games** | `docker-compose exec etl python main.py --task fetch_data --limit 100` |
 | **Fetch ALL Games** | `docker-compose exec etl python main.py --task fetch_data --limit 0` |
 | **View Scraper Logs** | `docker-compose logs -f etl` |
