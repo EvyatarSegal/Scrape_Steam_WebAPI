@@ -18,7 +18,7 @@ class SteamWebAPI(BaseExtractor):
     Interacts with official Steam Web API.
     Docs: https://partner.steamgames.com/doc/webapi/ISteamApps
     """
-    BASE_URL = "http://api.steampowered.com"
+    BASE_URL = "https://api.steampowered.com"
     STORE_URL = "https://store.steampowered.com/api/appdetails"
 
     def __init__(self, api_key=None):
@@ -58,6 +58,24 @@ class SteamWebAPI(BaseExtractor):
 
         except Exception as e:
             logger.error(f"Failed to fetch App List: {e}")
+            return []
+
+    def get_full_app_list_v2(self):
+        """
+        Fetches the COMPLETELY UNFILTERED list of all AppIDs.
+        This includes DLC, Videos, Tools, and items not listed on the store.
+        Warning: This is a large, non-paginated JSON response (~220,000+ items).
+        """
+        url = f"{self.BASE_URL}/ISteamApps/GetAppList/v2/"
+        try:
+            logger.info("Fetching full unfiltered app list (v2)...")
+            response = self.session.get(url)
+            response.raise_for_status()
+            apps = response.json().get('applist', {}).get('apps', [])
+            logger.info(f"Total unfiltered apps fetched: {len(apps)}")
+            return apps
+        except Exception as e:
+            logger.error(f"Failed to fetch unfiltered App List: {e}")
             return []
 
     @sleep_and_retry
