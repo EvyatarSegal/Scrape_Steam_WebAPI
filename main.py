@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def main():
     parser = argparse.ArgumentParser(description="Steam Market Analysis ETL CLI")
     parser.add_argument('--task', type=str, required=False, 
-                        choices=['init', 'fetch_list', 'fetch_data', 'full_run', 'reinit_apps'],
+                        choices=['init', 'fetch_list', 'fetch_data', 'full_run', 'reinit_apps', 'transform'],
                         help="Task to perform")
     parser.add_argument('--limit', type=int, default=50, help="Limit for batch (0 = fetch ALL, infinite loop)")
     parser.add_argument('--loop', action='store_true', help="Run continuously every 24h")
@@ -51,6 +51,9 @@ def main():
         init_db()
         apply_transformations()
     
+    elif args.task == 'transform':
+        apply_transformations()
+    
     elif args.task == 'fetch_list':
         init_db()
         apply_transformations()
@@ -68,11 +71,11 @@ def main():
         run_extraction_batch(limit=args.limit)
 
     elif args.task == 'reinit_apps':
-        logger.warning("--- Starting RE-INITIALIZATION (Unfiltered) ---")
+        logger.warning("--- Starting RE-INITIALIZATION (Comprehensive) ---")
         init_db()
         clear_app_list()
         apply_transformations()
-        update_app_list(unfiltered=True)
+        update_app_list()
         logger.info("Re-initialization complete. Run 'fetch_data' to begin metadata collection.")
 
 if __name__ == "__main__":
