@@ -1,7 +1,10 @@
 import argparse
 import logging
 import time
-from src.etl.loader import init_db, update_app_list, run_extraction_batch, apply_transformations, refresh_existing_data
+from src.etl.loader import (
+    init_db, update_app_list, run_extraction_batch, 
+    apply_transformations, refresh_existing_data, clear_app_list
+)
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
@@ -10,7 +13,7 @@ logger = logging.getLogger(__name__)
 def main():
     parser = argparse.ArgumentParser(description="Steam Market Analysis ETL CLI")
     parser.add_argument('--task', type=str, required=False, 
-                        choices=['init', 'fetch_list', 'fetch_data', 'full_run'],
+                        choices=['init', 'fetch_list', 'fetch_data', 'full_run', 'reinit_apps'],
                         help="Task to perform")
     parser.add_argument('--limit', type=int, default=50, help="Limit for batch (0 = fetch ALL, infinite loop)")
     parser.add_argument('--loop', action='store_true', help="Run continuously every 24h")
@@ -63,6 +66,14 @@ def main():
         apply_transformations()
         update_app_list()
         run_extraction_batch(limit=args.limit)
+
+    elif args.task == 'reinit_apps':
+        logger.warning("--- Starting RE-INITIALIZATION (Unfiltered) ---")
+        init_db()
+        clear_app_list()
+        apply_transformations()
+        update_app_list(unfiltered=True)
+        logger.info("Re-initialization complete. Run 'fetch_data' to begin metadata collection.")
 
 if __name__ == "__main__":
     main()
