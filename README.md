@@ -25,9 +25,13 @@ This project uses **Docker** to handle the software environment. This allows the
    - Open a terminal or command prompt in the project folder.
    - Run the command: `docker-compose up -d`.
 
-The application will start the database and begin the data collection process automatically.
+**That's it!** Docker Compose will automatically start the database and the ETL process. The scraper is configured to run on startup and will begin the data collection process immediately.
 
-**Please Note:** The process of fetching all the video games Should take around *122 Hours*, or 15 days if ran 8 hours every day.
+> [!NOTE]
+> If you've just started the container and the database takes too long to initialize, you may need to **restart the `etl` container** in Docker Desktop specifically.
+
+> [!WARNING]
+> The process of fetching all the video games Should take around *122 Hours*, or 15 days if ran 8 hours every day.
 
 ---
 
@@ -52,9 +56,29 @@ The system uses a three-tier schema in PostgreSQL:
 
 ### `main.py`
 The entry point for the application. It uses `argparse` to provide a command-line interface for specific tasks.
-- **`--task`**: Used to run `init` (database setup), `fetch_list` (discovery), `fetch_data` (metadata extraction), or `full_run`.
+- **`--task`**: Used to run `init` (database setup), `fetch_list` (discovery), `fetch_data` (metadata extraction), `full_run`, `reinit_apps`, or `transform`.
+- **`reinit_apps`**: A special task that **wipes the database** and performs a fresh, unfiltered fetch (~220k+ items) using the V2 API.
+- **`transform`**: Re-applies the SQL transformation logic (Views/Procedures) from `src/db/transformations.sql`. Use this if you've manually edited the SQL file.
 - **`--limit`**: Controls the number of games processed in a single batch.
 - **`--loop`**: Activates a 24-hour scheduler for continuous data updates.
+
+---
+
+## Docker CLI Reference
+
+If you want to run specific tasks manually while the container is running, use these commands:
+
+| Action | Command |
+| :--- | :--- |
+| **Get Full App List (220k)** | `docker-compose exec etl python main.py --task reinit_apps` |
+| **Apply SQL Changes** | `docker-compose exec etl python main.py --task transform` |
+| **Normal App Refresh (160k)** | `docker-compose exec etl python main.py --task fetch_list` |
+| **Fetch 100 Games** | `docker-compose exec etl python main.py --task fetch_data --limit 100` |
+| **Fetch ALL Games** | `docker-compose exec etl python main.py --task fetch_data --limit 0` |
+| **View Scraper Logs** | `docker-compose logs -f etl` |
+| **Access Database (PSQL)** | `docker-compose exec db psql -U admin -d steam_market` |
+
+---
 
 ### `src/etl/extractors.py`
 This module manages all outgoing API requests. It uses `urllib3` retry logic to handle network timeouts and 500-series errors. It enforces a limit of 4 requests per second for SteamSpy and manages strict throttling for the Steam Store public API.
@@ -117,6 +141,19 @@ Contains the SQL logic for data cleaning.
 | `is_early_access` | Boolean | `True` if the game is currently in Early Access. |
 | `steam_deck` | Boolean | `True` if the game is Steam Deck Verified. |
 | `controller_support` | Boolean | `True` if the game has Full Controller Support. |
+
+---
+
+## Common Errors & Troubleshooting
+
+| Error | Cause | Solution |
+| :--- | :--- | :--- |
+| **`401 Unauthorized`** | Missing or invalid `STEAM_API_KEY`. | Ensure your `.env` file has the correct key and no extra spaces. |
+| **`404 Not Found`** | Occurs if the Steam API URL is broken or uses `http` instead of `https`. | This is fixed in the latest version. Ensure you use `https`. |
+| **`Name or service not known`** | The scraper (`etl`) cannot find the database (`db`). | Ensure both services are running in the same Docker network. Try `docker-compose down` followed by `up -d`. |
+| **`Database uninitialized`** | The database started without a password. | Ensure `POSTGRES_PASSWORD` is set in `.env` or use the default fallbacks in `docker-compose.yml`. |
+| **`Connection Refused`** | Database is still booting up. | In Docker Desktop, **restart the `etl` container** manually after a few seconds. |
+| **`429 Too Many Requests`** | You've hit Steam's strict rate limits. | The script handles this automatically by waiting. If it persists, try increasing the `@limits` period in `extractors.py`. |
 
 ---
 
