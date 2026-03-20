@@ -30,6 +30,22 @@ def init_db():
     Base.metadata.create_all(engine)
     logger.info("Database Initialized.")
 
+def clear_app_list():
+    """Wipes the app list and raw data to allow for a fresh re-initialization."""
+    session = SessionLocal()
+    try:
+        logger.warning("TRUNCATING steam_apps and raw_game_data tables...")
+        session.execute(text("TRUNCATE TABLE steam_apps CASCADE;"))
+        session.execute(text("TRUNCATE TABLE raw_game_data CASCADE;"))
+        session.execute(text("TRUNCATE TABLE game_analytics CASCADE;"))
+        session.commit()
+        logger.info("Database wiped successfully.")
+    except Exception as e:
+        logger.error(f"Failed to wipe database: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
 def apply_transformations():
     """Reads and applies the SQL transformation Logic."""
     try:
@@ -51,10 +67,14 @@ def apply_transformations():
 
 
 
-def update_app_list():
-    """Fetches the full app list from Steam and updates the DB."""
+def update_app_list(unfiltered=False):
+    """Fetches the app list from Steam and updates the DB."""
     api = SteamWebAPI(api_key=os.getenv("STEAM_API_KEY"))
-    apps = api.get_app_list()
+    
+    if unfiltered:
+        apps = api.get_full_app_list_v2()
+    else:
+        apps = api.get_app_list()
     
     if not apps:
         logger.warning("No apps found or API failure.")
