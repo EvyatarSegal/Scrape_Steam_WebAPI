@@ -28,7 +28,14 @@ class SteamWebAPI(BaseExtractor):
     def get_app_list(self):
         """Fetches the full list of AppIDs using pagination (IStoreService)."""
         url = "https://api.steampowered.com/IStoreService/GetAppList/v1/"
-        params = {'key': self.api_key, 'include_games': 1} # truncated for brevity
+        params = {
+            'key': self.api_key, 
+            'include_games': 1,
+            'include_dlc': 1,
+            'include_software': 1,
+            'include_videos': 1,
+            'include_hardware': 1
+        }
         all_apps = []
         last_appid = None
         more_results = True
