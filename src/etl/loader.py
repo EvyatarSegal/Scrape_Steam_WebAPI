@@ -59,9 +59,12 @@ def apply_transformations():
             
         with engine.connect() as connection:
             connection.execute(text(sql_script))
+            # Automatically populate the table after redefining logic
+            logger.info("Syncing data to analytics table...")
+            connection.execute(text("CALL refresh_analytics();"))
             connection.commit()
             
-        logger.info("Transformations applied successfully.")
+        logger.info("Transformations applied and table refreshed successfully.")
     except Exception as e:
         logger.error(f"Failed to apply transformations: {e}")
 
