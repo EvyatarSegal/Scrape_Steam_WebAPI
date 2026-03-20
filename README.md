@@ -16,7 +16,7 @@ This project uses **Docker** to handle the software environment. This allows the
 
 ### Installation
 
-1. **Download the code**: [Download this repository as a ZIP file](TBD) and extract it to a folder.
+1. **Download the code**: [Download this repository as a ZIP file](https://github.com/EvyatarSegal/Scrape_Steam_WebAPI/archive/refs/heads/main.zip) and extract it to a folder.
 2. **Configure your API key**: 
    - Find the file named `.env.example` in the project folder.
    - Rename it to `.env`.
