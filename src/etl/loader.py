@@ -67,14 +67,10 @@ def apply_transformations():
 
 
 
-def update_app_list(unfiltered=False):
-    """Fetches the app list from Steam and updates the DB."""
+def update_app_list():
+    """Fetches the full app list from Steam (including DLC, etc.) and updates the DB."""
     api = SteamWebAPI(api_key=os.getenv("STEAM_API_KEY"))
-    
-    if unfiltered:
-        apps = api.get_full_app_list_v2()
-    else:
-        apps = api.get_app_list()
+    apps = api.get_app_list()
     
     if not apps:
         logger.warning("No apps found or API failure.")
